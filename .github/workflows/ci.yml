@@ -20,6 +20,9 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
+      - name: Format check
+        run: cargo fmt --all -- --check
+
       - name: Clippy
         run: cargo clippy -p save_jar --all-targets -- -D warnings
 
