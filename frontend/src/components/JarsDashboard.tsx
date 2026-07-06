@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import type { JarData } from "save_jar_client";
 import { getClient, unwrapResult } from "../lib/contract";
 import { JarCard } from "./JarCard";
@@ -21,6 +21,11 @@ export function JarsDashboard({ address, refreshKey }: JarsDashboardProps) {
   const [error, setError] = useState<string | null>(null);
   const [nowSeconds, setNowSeconds] = useState(() => Math.floor(Date.now() / 1000));
 
+  // Withdrawal is one-time and terminal (see contracts/save_jar/src/lib.rs),
+  // so a withdrawn jar can never change again — skip refetching it on
+  // subsequent polls and reuse the cached entry instead.
+  const withdrawnCache = useRef(new Map<string, JarEntry>());
+
   const loadJars = useCallback(async () => {
     setError(null);
     try {
@@ -30,15 +35,22 @@ export function JarsDashboard({ address, refreshKey }: JarsDashboardProps) {
 
       const entries = await Promise.all(
         ids.map(async (jarId): Promise<JarEntry> => {
+          const cached = withdrawnCache.current.get(jarId.toString());
+          if (cached) return cached;
+
           const [jarTx, unlockedTx] = await Promise.all([
             client.get_jar({ jar_id: jarId }),
             client.is_unlocked({ jar_id: jarId }),
           ]);
-          return {
+          const entry: JarEntry = {
             jarId,
             jar: unwrapResult(jarTx.result),
             unlocked: unwrapResult(unlockedTx.result),
           };
+          if (entry.jar.withdrawn) {
+            withdrawnCache.current.set(jarId.toString(), entry);
+          }
+          return entry;
         }),
       );
 
@@ -49,6 +61,10 @@ export function JarsDashboard({ address, refreshKey }: JarsDashboardProps) {
     } finally {
       setLoading(false);
     }
+  }, [address]);
+
+  useEffect(() => {
+    withdrawnCache.current.clear();
   }, [address]);
 
   useEffect(() => {
