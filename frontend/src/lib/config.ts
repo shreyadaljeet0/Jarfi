@@ -2,7 +2,7 @@ import { networks } from "save_jar_client";
 
 export const CONTRACT_ID = networks.testnet.contractId;
 export const NETWORK_PASSPHRASE = networks.testnet.networkPassphrase;
-export const RPC_URL = "https://soroban-testnet.stellar.org";
+export const RPC_URL = import.meta.env.VITE_RPC_URL ?? "https://soroban-testnet.stellar.org";
 
 // Horizon (classic Stellar API), used by the /wallet demo page for balances
 // and raw payments — separate from the Soroban RPC_URL above.
