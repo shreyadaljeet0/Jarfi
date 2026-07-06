@@ -1,6 +1,9 @@
 {
   "name": "save-jar",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "workspaces": [
     "frontend",
     "packages/*"
