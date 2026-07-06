@@ -148,6 +148,25 @@ form.create-jar-form select {
   font-size: 14px;
 }
 
+/* Small inline spinner for loading states, matching wallet-panel.css. */
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -2px;
+  margin-right: 6px;
+  animation: app-spin 0.7s linear infinite;
+}
+
+@keyframes app-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .success {
   color: #30a46c;
   font-size: 14px;

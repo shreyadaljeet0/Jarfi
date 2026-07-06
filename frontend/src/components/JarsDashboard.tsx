@@ -82,7 +82,12 @@ export function JarsDashboard({ address, refreshKey }: JarsDashboardProps) {
   return (
     <section className="jars-dashboard">
       <h2>My Jars</h2>
-      {loading && <p>Loading jars…</p>}
+      {loading && (
+        <p>
+          <span className="spinner" aria-hidden="true" />
+          Loading jars…
+        </p>
+      )}
       {error && <p className="error">{error}</p>}
       {!loading && jars.length === 0 && <p>No jars yet — create one above.</p>}
       <div className="jars-grid">
