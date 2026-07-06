@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { JarData } from "save_jar_client";
-import { getClient, unwrapResult } from "../lib/contract";
+import { getClient, unwrapResult, friendlyContractError } from "../lib/contract";
 import { formatUnits, toStroops, formatCountdown } from "../lib/format";
 
 interface JarCardProps {
@@ -48,7 +48,7 @@ export function JarCard({ jarId, jar, unlocked, address, nowSeconds, onChanged }
       setDepositAmount("");
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(friendlyContractError(err));
     } finally {
       setBusy(false);
     }
@@ -64,7 +64,7 @@ export function JarCard({ jarId, jar, unlocked, address, nowSeconds, onChanged }
       unwrapResult(result);
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(friendlyContractError(err));
     } finally {
       setBusy(false);
     }

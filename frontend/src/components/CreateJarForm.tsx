@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import type { UnlockType } from "save_jar_client";
-import { getClient, unwrapResult } from "../lib/contract";
+import { getClient, unwrapResult, friendlyContractError } from "../lib/contract";
 import { NATIVE_ASSET_CONTRACT_ID } from "../lib/config";
 import { toStroops } from "../lib/format";
 
@@ -71,7 +71,7 @@ export function CreateJarForm({ address, onCreated }: CreateJarFormProps) {
       setCreatedJarId(jarId);
       onCreated(jarId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(friendlyContractError(err));
     } finally {
       setSubmitting(false);
     }
