@@ -5,7 +5,45 @@ on:
     branches: [main]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run contract tests
+        run: cargo test -p save_jar
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build contract bindings package
+        run: npm run build -w save_jar_client
+
+      - name: Lint frontend
+        run: npm run lint -w frontend
+
+      - name: Build frontend
+        run: npm run build -w frontend
+
+      - name: Test frontend
+        run: npm run test -w frontend
+
   deploy-contract:
+    needs: [test]
     runs-on: ubuntu-latest
     outputs:
       contract-id: ${{ steps.deploy.outputs.contract-id }}
