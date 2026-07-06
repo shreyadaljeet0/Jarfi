@@ -196,6 +196,28 @@ fn test_goal_only_unlocks_on_balance() {
 }
 
 #[test]
+fn test_goal_only_unlocks_exactly_at_boundary() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let contract_id = env.register(SaveJarContract, ());
+    let client = SaveJarContractClient::new(&env, &contract_id);
+
+    let owner = Address::generate(&env);
+    let admin = Address::generate(&env);
+    let (asset, token_admin, _) = create_token(&env, &admin);
+    token_admin.mint(&owner, &1_000_i128);
+
+    let jar_id = client.create_jar(&owner, &asset, &UnlockType::GoalOnly, &0u64, &500i128);
+
+    client.deposit(&jar_id, &owner, &499i128);
+    assert!(!client.is_unlocked(&jar_id), "one unit short of the goal stays locked");
+
+    client.deposit(&jar_id, &owner, &1i128);
+    assert!(client.is_unlocked(&jar_id), "balance exactly equal to target_amount unlocks");
+}
+
+#[test]
 fn test_create_jar_rejects_non_token_asset() {
     let env = Env::default();
     env.mock_all_auths();
