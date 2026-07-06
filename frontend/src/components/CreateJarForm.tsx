@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import type { UnlockType } from "save_jar_client";
+import { StrKey } from "save_jar_client";
 import { getClient, unwrapResult, friendlyContractError } from "../lib/contract";
 import { NATIVE_ASSET_CONTRACT_ID } from "../lib/config";
 import { toStroops } from "../lib/format";
@@ -40,6 +41,10 @@ export function CreateJarForm({ address, onCreated }: CreateJarFormProps) {
     const asset = assetChoice === "native" ? NATIVE_ASSET_CONTRACT_ID : customAsset.trim();
     if (!asset) {
       setError("Enter a token contract address.");
+      return;
+    }
+    if (assetChoice === "custom" && !StrKey.isValidContract(asset)) {
+      setError("That doesn't look like a valid token contract address (should start with C...).");
       return;
     }
     if (needsDate && !targetDate) {
