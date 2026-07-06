@@ -5,8 +5,8 @@ import { StrKey } from "save_jar_client";
 import { getClient, unwrapResult, friendlyContractError } from "../lib/contract";
 import { NATIVE_ASSET_CONTRACT_ID } from "../lib/config";
 import { toStroops } from "../lib/format";
-
-type UnlockTypeTag = UnlockType["tag"];
+import { needsDate, needsAmount, validateJarInputs } from "../lib/jar-form";
+import type { UnlockTypeTag } from "../lib/jar-form";
 
 const UNLOCK_LABELS: Record<UnlockTypeTag, string> = {
   DateOnly: "Unlock on a date",
@@ -30,36 +30,27 @@ export function CreateJarForm({ address, onCreated }: CreateJarFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [createdJarId, setCreatedJarId] = useState<bigint | null>(null);
 
-  const needsDate = unlockType !== "GoalOnly";
-  const needsAmount = unlockType !== "DateOnly";
-
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setCreatedJarId(null);
 
     const asset = assetChoice === "native" ? NATIVE_ASSET_CONTRACT_ID : customAsset.trim();
-    if (!asset) {
-      setError("Enter a token contract address.");
-      return;
-    }
-    if (assetChoice === "custom" && !StrKey.isValidContract(asset)) {
+    if (assetChoice === "custom" && asset && !StrKey.isValidContract(asset)) {
       setError("That doesn't look like a valid token contract address (should start with C...).");
       return;
     }
-    if (needsDate && !targetDate) {
-      setError("Pick a target date.");
-      return;
-    }
-    if (needsAmount && (!targetAmount || Number(targetAmount) <= 0)) {
-      setError("Enter a target amount greater than 0.");
+
+    const validationError = validateJarInputs({ unlockType, asset, targetDate, targetAmount });
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
-    const targetDateSeconds = needsDate
+    const targetDateSeconds = needsDate(unlockType)
       ? BigInt(Math.floor(new Date(targetDate).getTime() / 1000))
       : 0n;
-    const targetAmountStroops = needsAmount ? toStroops(targetAmount) : 0n;
+    const targetAmountStroops = needsAmount(unlockType) ? toStroops(targetAmount) : 0n;
 
     setSubmitting(true);
     try {
@@ -117,14 +108,14 @@ export function CreateJarForm({ address, onCreated }: CreateJarFormProps) {
         </select>
       </label>
 
-      {needsDate && (
+      {needsDate(unlockType) && (
         <label>
           Target date
           <input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} />
         </label>
       )}
 
-      {needsAmount && (
+      {needsAmount(unlockType) && (
         <label>
           Target amount ({assetChoice === "native" ? "XLM" : "token units"})
           <input
