@@ -37,11 +37,19 @@ enum DataKey {
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Error {
+    /// `target_date`/`target_amount` don't satisfy the chosen `UnlockType`,
+    /// or `asset` isn't a valid SEP-41 token.
     InvalidConfig = 1,
+    /// No jar exists for the given id.
     JarNotFound = 2,
+    /// `deposit` was called with an amount <= 0.
     ZeroDeposit = 3,
+    /// `withdraw` was called by an address other than the jar's owner.
     NotOwner = 4,
+    /// `withdraw` or `deposit` was called on a jar that's already been
+    /// withdrawn (withdrawal is one-time and all-or-nothing).
     AlreadyWithdrawn = 5,
+    /// `withdraw` was called before the unlock condition was met.
     StillLocked = 6,
 }
 
@@ -77,6 +85,12 @@ pub struct SaveJarContract;
 
 #[contractimpl]
 impl SaveJarContract {
+    /// Create a new jar owned by `owner`, holding `asset` (a SEP-41 token),
+    /// unlockable per `unlock_type`. Requires `owner`'s authorization.
+    ///
+    /// `target_date` must be in the future for `DateOnly`/`EitherOne`/
+    /// `BothRequired`; `target_amount` must be > 0 for `GoalOnly`/
+    /// `EitherOne`/`BothRequired`. Returns the new jar's id.
     pub fn create_jar(
         env: Env,
         owner: Address,
@@ -155,6 +169,11 @@ impl SaveJarContract {
         Ok(jar_id)
     }
 
+    /// Deposit `amount` of the jar's asset from `depositor` into jar
+    /// `jar_id`. Requires `depositor`'s authorization but *not* jar
+    /// ownership — anyone may top up any jar (e.g. to gift savings).
+    /// Fails if the jar doesn't exist, is already withdrawn, or
+    /// `amount <= 0`.
     pub fn deposit(env: Env, jar_id: u64, depositor: Address, amount: i128) -> Result<(), Error> {
         depositor.require_auth();
 
@@ -189,6 +208,11 @@ impl SaveJarContract {
         Ok(())
     }
 
+    /// Withdraw the full balance of jar `jar_id` to its owner. Requires
+    /// `caller`'s authorization and that `caller` is the jar's owner, that
+    /// the unlock condition is met, and that the jar hasn't already been
+    /// withdrawn. Withdrawal is one-time and all-or-nothing — there is no
+    /// partial withdrawal.
     pub fn withdraw(env: Env, jar_id: u64, caller: Address) -> Result<(), Error> {
         caller.require_auth();
 
@@ -226,6 +250,7 @@ impl SaveJarContract {
         Ok(())
     }
 
+    /// Read-only lookup of a jar's full state by id.
     pub fn get_jar(env: Env, jar_id: u64) -> Result<JarData, Error> {
         env.storage()
             .persistent()
@@ -233,6 +258,7 @@ impl SaveJarContract {
             .ok_or(Error::JarNotFound)
     }
 
+    /// Read-only list of jar ids created by `owner`, in creation order.
     pub fn get_user_jars(env: Env, owner: Address) -> Vec<u64> {
         env.storage()
             .persistent()
@@ -240,6 +266,8 @@ impl SaveJarContract {
             .unwrap_or(Vec::new(&env))
     }
 
+    /// Read-only check of whether jar `jar_id`'s unlock condition is
+    /// currently met (independent of whether it's already withdrawn).
     pub fn is_unlocked(env: Env, jar_id: u64) -> Result<bool, Error> {
         let jar: JarData = env
             .storage()
