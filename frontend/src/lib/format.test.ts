@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatUnits, toStroops, formatCountdown } from "./format";
+import { formatUnits, toStroops, formatCountdown, progressPercent } from "./format";
 
 describe("formatUnits", () => {
   it("formats whole XLM amounts without a decimal point", () => {
@@ -27,6 +27,28 @@ describe("toStroops", () => {
   it("round-trips through formatUnits", () => {
     const stroops = 123_456_789n;
     expect(toStroops(formatUnits(stroops))).toBe(stroops);
+  });
+});
+
+describe("progressPercent", () => {
+  it("returns null when there's no goal", () => {
+    expect(progressPercent(500n, 0n)).toBeNull();
+  });
+
+  it("computes the percentage of balance toward the goal", () => {
+    expect(progressPercent(250n, 1000n)).toBe(25);
+  });
+
+  it("reaches exactly 100 when the balance equals the goal", () => {
+    expect(progressPercent(500n, 500n)).toBe(100);
+  });
+
+  it("caps at 100 when the balance exceeds the goal", () => {
+    expect(progressPercent(2000n, 500n)).toBe(100);
+  });
+
+  it("is 0 for a zero balance against a goal", () => {
+    expect(progressPercent(0n, 500n)).toBe(0);
   });
 });
 
