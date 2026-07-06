@@ -6,9 +6,9 @@ import {
   BASE_FEE,
   StrKey,
 } from "@stellar/stellar-sdk";
-import { STELLAR_TESTNET_PASSPHRASE, HORIZON_TESTNET_URL } from "./stellar-wallet";
+import { NETWORK_PASSPHRASE, HORIZON_URL } from "./config";
 
-const server = new Horizon.Server(HORIZON_TESTNET_URL);
+const server = new Horizon.Server(HORIZON_URL);
 
 /** Client-side check for a valid Stellar public (G...) address. */
 export function isValidStellarAddress(address: string): boolean {
@@ -20,7 +20,7 @@ export function isValidStellarAddress(address: string): boolean {
  * Returns "0" for an unfunded account (HTTP 404) instead of throwing.
  */
 export async function fetchXlmBalance(address: string): Promise<string> {
-  const res = await fetch(`${HORIZON_TESTNET_URL}/accounts/${address}`);
+  const res = await fetch(`${HORIZON_URL}/accounts/${address}`);
 
   if (res.status === 404) return "0"; // account not funded yet
   if (!res.ok) {
@@ -47,7 +47,7 @@ export async function buildPaymentXdr(
 
   const transaction = new TransactionBuilder(account, {
     fee: BASE_FEE,
-    networkPassphrase: STELLAR_TESTNET_PASSPHRASE,
+    networkPassphrase: NETWORK_PASSPHRASE,
   })
     .addOperation(
       Operation.payment({
@@ -67,7 +67,7 @@ export async function buildPaymentXdr(
  * Resolves with the transaction hash; rejects with the Horizon error.
  */
 export async function submitSignedTx(signedXdr: string): Promise<{ hash: string }> {
-  const transaction = TransactionBuilder.fromXDR(signedXdr, STELLAR_TESTNET_PASSPHRASE);
+  const transaction = TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE);
   const result = await server.submitTransaction(transaction);
   return { hash: result.hash };
 }

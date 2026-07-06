@@ -5,12 +5,7 @@ import {
   getAddress,
   signTransaction,
 } from "@stellar/freighter-api";
-
-/**
- * Stellar Testnet constants. Every call in this app targets Testnet only.
- */
-export const STELLAR_TESTNET_PASSPHRASE = "Test SDF Network ; September 2015";
-export const HORIZON_TESTNET_URL = "https://horizon-testnet.stellar.org";
+import { NETWORK_PASSPHRASE } from "./config";
 
 /** Freighter's structured error → a plain Error with a readable message. */
 function freighterError(
@@ -75,7 +70,7 @@ export async function getWalletAddress(): Promise<string | null> {
  */
 export async function signTx(xdr: string): Promise<string> {
   const { signedTxXdr, error } = await signTransaction(xdr, {
-    networkPassphrase: STELLAR_TESTNET_PASSPHRASE,
+    networkPassphrase: NETWORK_PASSPHRASE,
   });
   if (error) {
     throw freighterError(error, "Freighter failed to sign the transaction.");
