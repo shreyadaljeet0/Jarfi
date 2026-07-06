@@ -45,6 +45,8 @@ jobs:
   deploy-contract:
     needs: [test]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       contract-id: ${{ steps.deploy.outputs.contract-id }}
     steps:
@@ -86,6 +88,20 @@ jobs:
             --network testnet \
             --output-dir packages/save_jar_client \
             --overwrite
+
+      # The committed src/index.ts is what local `npm install` consumers and
+      # the README's contract ID reference see — without this, it goes stale
+      # (pointing at the previous deployment) after every deploy since only
+      # the CI job that ran it ever saw the regenerated bindings.
+      - name: Commit regenerated bindings back to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet -- packages/save_jar_client/src/index.ts; then
+            git add packages/save_jar_client/src/index.ts
+            git commit -m "chore(cd): update contract bindings for ${{ steps.deploy.outputs.contract-id }} [skip ci]"
+            git push
+          fi
 
       - name: Setup Node
         uses: actions/setup-node@v4
