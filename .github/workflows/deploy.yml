@@ -1,0 +1,99 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-contract:
+    runs-on: ubuntu-latest
+    outputs:
+      contract-id: ${{ steps.deploy.outputs.contract-id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Stellar CLI
+        run: cargo install --locked stellar-cli --features opt
+
+      - name: Build contract wasm
+        working-directory: contracts/save_jar
+        run: cargo build --target wasm32v1-none --release
+
+      - name: Deploy contract
+        id: deploy
+        working-directory: contracts/save_jar
+        run: |
+          CONTRACT_ID=$(stellar contract deploy \
+            --wasm ../../target/wasm32v1-none/release/save_jar.wasm \
+            --source "${{ secrets.STELLAR_SECRET_KEY }}" \
+            --network testnet)
+          echo "contract-id=$CONTRACT_ID" >> "$GITHUB_OUTPUT"
+
+      # The frontend never reads the contract ID from an env var — it imports it
+      # from packages/save_jar_client's generated `networks` export (see
+      # frontend/src/lib/config.ts) — so bindings must be regenerated and built
+      # here for the new deployment to take effect.
+      - name: Regenerate TypeScript bindings
+        run: |
+          stellar contract bindings typescript \
+            --contract-id "${{ steps.deploy.outputs.contract-id }}" \
+            --network testnet \
+            --output-dir packages/save_jar_client \
+            --overwrite
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Build bindings package
+        run: npm ci && npm run build -w save_jar_client
+
+      - name: Upload bindings artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: save_jar_client-dist
+          path: packages/save_jar_client/dist
+
+  deploy-frontend:
+    needs: [deploy-contract]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download bindings artifact (new contract ID)
+        uses: actions/download-artifact@v4
+        with:
+          name: save_jar_client-dist
+          path: packages/save_jar_client/dist
+
+      - name: Build frontend
+        run: npm run build -w frontend
+
+      - name: Deploy to Vercel
+        working-directory: frontend
+        run: |
+          npx vercel --prod --yes \
+            --token "${{ secrets.VERCEL_TOKEN }}" \
+            --scope "${{ secrets.VERCEL_ORG_ID }}"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
