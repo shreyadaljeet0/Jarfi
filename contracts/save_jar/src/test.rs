@@ -453,6 +453,34 @@ fn test_is_unlocked_nonexistent_jar_rejected() {
 }
 
 #[test]
+fn test_deposit_allowed_from_non_owner() {
+    // Deposits are permissionless by design (e.g. gifting into someone else's
+    // jar) — only the jar's own auth (require_auth on `depositor`) is
+    // checked, not ownership of the jar itself.
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let contract_id = env.register(SaveJarContract, ());
+    let client = SaveJarContractClient::new(&env, &contract_id);
+
+    let owner = Address::generate(&env);
+    let gifter = Address::generate(&env);
+    let admin = Address::generate(&env);
+    let (asset, token_admin, token) = create_token(&env, &admin);
+    token_admin.mint(&gifter, &1_000_i128);
+
+    let target_date = env.ledger().timestamp() + 1000;
+    let jar_id = client.create_jar(&owner, &asset, &UnlockType::DateOnly, &target_date, &0i128);
+
+    client.deposit(&jar_id, &gifter, &300i128);
+
+    let jar = client.get_jar(&jar_id);
+    assert_eq!(jar.balance, 300);
+    assert_eq!(token.balance(&gifter), 700);
+    assert_eq!(token.balance(&contract_id), 300);
+}
+
+#[test]
 fn test_deposit_after_withdrawal_rejected() {
     let env = Env::default();
     env.mock_all_auths();
