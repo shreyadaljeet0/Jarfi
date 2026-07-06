@@ -4,7 +4,10 @@ use super::*;
 use soroban_sdk::testutils::{Address as _, Ledger};
 use soroban_sdk::Env;
 
-fn create_token<'a>(env: &Env, admin: &Address) -> (Address, token::StellarAssetClient<'a>, token::Client<'a>) {
+fn create_token<'a>(
+    env: &Env,
+    admin: &Address,
+) -> (Address, token::StellarAssetClient<'a>, token::Client<'a>) {
     let sac = env.register_stellar_asset_contract_v2(admin.clone());
     let address = sac.address();
     (
@@ -211,10 +214,16 @@ fn test_goal_only_unlocks_exactly_at_boundary() {
     let jar_id = client.create_jar(&owner, &asset, &UnlockType::GoalOnly, &0u64, &500i128);
 
     client.deposit(&jar_id, &owner, &499i128);
-    assert!(!client.is_unlocked(&jar_id), "one unit short of the goal stays locked");
+    assert!(
+        !client.is_unlocked(&jar_id),
+        "one unit short of the goal stays locked"
+    );
 
     client.deposit(&jar_id, &owner, &1i128);
-    assert!(client.is_unlocked(&jar_id), "balance exactly equal to target_amount unlocks");
+    assert!(
+        client.is_unlocked(&jar_id),
+        "balance exactly equal to target_amount unlocks"
+    );
 }
 
 #[test]
@@ -229,8 +238,13 @@ fn test_create_jar_rejects_non_token_asset() {
     let not_a_token = Address::generate(&env);
 
     let target_date = env.ledger().timestamp() + 1000;
-    let result =
-        client.try_create_jar(&owner, &not_a_token, &UnlockType::DateOnly, &target_date, &0i128);
+    let result = client.try_create_jar(
+        &owner,
+        &not_a_token,
+        &UnlockType::DateOnly,
+        &target_date,
+        &0i128,
+    );
     assert!(result.is_err());
 }
 
@@ -293,7 +307,13 @@ fn test_either_one_unlocks_on_first_condition_met() {
     token_admin.mint(&owner, &1_000_i128);
 
     let target_date = env.ledger().timestamp() + 1000;
-    let jar_id = client.create_jar(&owner, &asset, &UnlockType::EitherOne, &target_date, &500i128);
+    let jar_id = client.create_jar(
+        &owner,
+        &asset,
+        &UnlockType::EitherOne,
+        &target_date,
+        &500i128,
+    );
 
     client.deposit(&jar_id, &owner, &500i128);
     assert!(client.is_unlocked(&jar_id));
@@ -317,13 +337,25 @@ fn test_either_one_unlocks_on_date_before_goal_met() {
     token_admin.mint(&owner, &1_000_i128);
 
     let target_date = env.ledger().timestamp() + 1000;
-    let jar_id = client.create_jar(&owner, &asset, &UnlockType::EitherOne, &target_date, &500i128);
+    let jar_id = client.create_jar(
+        &owner,
+        &asset,
+        &UnlockType::EitherOne,
+        &target_date,
+        &500i128,
+    );
 
     client.deposit(&jar_id, &owner, &100i128);
-    assert!(!client.is_unlocked(&jar_id), "neither date nor goal met yet");
+    assert!(
+        !client.is_unlocked(&jar_id),
+        "neither date nor goal met yet"
+    );
 
     env.ledger().set_timestamp(target_date);
-    assert!(client.is_unlocked(&jar_id), "date reached even though goal is unmet");
+    assert!(
+        client.is_unlocked(&jar_id),
+        "date reached even though goal is unmet"
+    );
     client.withdraw(&jar_id, &owner);
 
     let jar = client.get_jar(&jar_id);
@@ -343,7 +375,8 @@ fn test_either_one_requires_both_targets_set() {
     let (asset, _, _) = create_token(&env, &admin);
 
     let target_date = env.ledger().timestamp() + 1000;
-    let result = client.try_create_jar(&owner, &asset, &UnlockType::EitherOne, &target_date, &0i128);
+    let result =
+        client.try_create_jar(&owner, &asset, &UnlockType::EitherOne, &target_date, &0i128);
     assert!(result.is_err());
 }
 
@@ -361,10 +394,19 @@ fn test_both_required_needs_date_and_goal() {
     token_admin.mint(&owner, &1_000_i128);
 
     let target_date = env.ledger().timestamp() + 1000;
-    let jar_id = client.create_jar(&owner, &asset, &UnlockType::BothRequired, &target_date, &500i128);
+    let jar_id = client.create_jar(
+        &owner,
+        &asset,
+        &UnlockType::BothRequired,
+        &target_date,
+        &500i128,
+    );
 
     client.deposit(&jar_id, &owner, &500i128);
-    assert!(!client.is_unlocked(&jar_id), "goal met but date not yet reached");
+    assert!(
+        !client.is_unlocked(&jar_id),
+        "goal met but date not yet reached"
+    );
     assert!(client.try_withdraw(&jar_id, &owner).is_err());
 
     env.ledger().set_timestamp(target_date);
@@ -389,7 +431,13 @@ fn test_both_required_date_met_goal_not_met_stays_locked() {
     token_admin.mint(&owner, &1_000_i128);
 
     let target_date = env.ledger().timestamp() + 1000;
-    let jar_id = client.create_jar(&owner, &asset, &UnlockType::BothRequired, &target_date, &500i128);
+    let jar_id = client.create_jar(
+        &owner,
+        &asset,
+        &UnlockType::BothRequired,
+        &target_date,
+        &500i128,
+    );
 
     client.deposit(&jar_id, &owner, &100i128);
     env.ledger().set_timestamp(target_date);
@@ -411,8 +459,13 @@ fn test_both_required_rejects_missing_target_amount() {
     let (asset, _, _) = create_token(&env, &admin);
 
     let target_date = env.ledger().timestamp() + 1000;
-    let result =
-        client.try_create_jar(&owner, &asset, &UnlockType::BothRequired, &target_date, &0i128);
+    let result = client.try_create_jar(
+        &owner,
+        &asset,
+        &UnlockType::BothRequired,
+        &target_date,
+        &0i128,
+    );
     assert!(result.is_err());
 }
 

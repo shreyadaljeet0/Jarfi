@@ -1,6 +1,6 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contractevent, contracterror, contractimpl, contracttype, token, Address, Env, Vec,
+    contract, contracterror, contractevent, contractimpl, contracttype, token, Address, Env, Vec,
 };
 
 mod test;
@@ -128,11 +128,7 @@ impl SaveJarContract {
         }
 
         let counter_key = DataKey::JarCounter;
-        let jar_id: u64 = env
-            .storage()
-            .instance()
-            .get(&counter_key)
-            .unwrap_or(0u64);
+        let jar_id: u64 = env.storage().instance().get(&counter_key).unwrap_or(0u64);
         let next_id = jar_id + 1;
         env.storage().instance().set(&counter_key, &next_id);
 
