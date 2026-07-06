@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run unit tests
+        run: cargo test -p save_jar
+
+      - name: Build wasm
+        run: cargo build --target wasm32v1-none --release -p save_jar
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # frontend imports save_jar_client's dist/ output directly; dist/ is
+      # gitignored (generated), so it must be built before frontend build/test.
+      - name: Build contract bindings package
+        run: npm run build -w save_jar_client
+
+      - name: Lint
+        run: npm run lint -w frontend
+
+      - name: Build
+        run: npm run build -w frontend
+
+      - name: Test
+        run: npm run test -w frontend
