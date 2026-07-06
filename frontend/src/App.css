@@ -1,0 +1,245 @@
+.app {
+  /* Root font-size is 16px (so the landing page's rem-based Tailwind matches
+     the design template). The dApp was tuned against an 18px base, so restore
+     it here — App.css sizing is otherwise all px, so nothing else shifts. */
+  font-size: 18px;
+  width: 1126px;
+  max-width: 100%;
+  margin: 0 auto;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  box-sizing: border-box;
+  padding: 0 0 64px;
+  text-align: left;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+}
+
+.navbar-links a {
+  font-size: 14px;
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.navbar-links a:hover {
+  color: var(--accent);
+}
+
+.navbar-logo {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.navbar-title {
+  font-family: var(--heading);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--text-h);
+}
+
+.navbar-wallet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app header {
+  text-align: center;
+  padding: 24px 20px 8px;
+  margin-bottom: 24px;
+}
+
+.tagline {
+  color: var(--text);
+  margin-top: 8px;
+}
+
+.wallet-address {
+  font-family: var(--mono);
+  font-size: 14px;
+}
+
+.app button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+  padding: 8px 16px;
+}
+
+.app button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.disconnect-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  background: transparent;
+}
+
+.app main {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+form.create-jar-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+form.create-jar-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+form.create-jar-form input,
+form.create-jar-form select {
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.error {
+  color: #e5484d;
+  font-size: 14px;
+}
+
+.success {
+  color: #30a46c;
+  font-size: 14px;
+}
+
+.jars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.jar-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.jar-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.jar-card-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.status-badge {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.status-locked {
+  color: #e5484d;
+}
+
+.status-unlocked {
+  color: #30a46c;
+}
+
+.status-withdrawn {
+  color: var(--text);
+}
+
+.jar-condition,
+.jar-balance,
+.jar-countdown {
+  font-size: 14px;
+  margin: 0;
+}
+
+.progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--code-bg);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+}
+
+.jar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.deposit-row {
+  display: flex;
+  gap: 8px;
+}
+
+.deposit-row input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.withdraw-btn {
+  width: 100%;
+}

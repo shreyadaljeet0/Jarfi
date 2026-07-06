@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Scoped under .landing-theme instead of :root — the rest of the app (Navbar,
+ * CreateJarForm, JarsDashboard) already defines its own --border/--bg/etc.
+ * custom properties on :root, and shadcn's token names collide with those.
+ */
+.landing-theme {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 5%;
+  --card: 0 0% 98%;
+  --card-foreground: 0 0% 5%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 5%;
+  --primary: 0 0% 5%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 94%;
+  --secondary-foreground: 0 0% 5%;
+  --muted: 0 0% 94%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 0 0% 94%;
+  --accent-foreground: 0 0% 5%;
+  --destructive: 0 0% 30%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 85%;
+  --input: 0 0% 85%;
+  --ring: 0 0% 5%;
+  --radius: 0rem;
+
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  scroll-behavior: smooth;
+
+  /*
+   * Neutralize global index.css leaks so the landing page matches the design
+   * template's defaults: :root sets `letter-spacing: 0.18px` and a 145% base
+   * line-height that would otherwise inherit into body copy here.
+   */
+  letter-spacing: normal;
+  line-height: 1.5;
+}
+
+.landing-theme .text-balance {
+  text-wrap: balance;
+}
+
+/*
+ * index.css sets a global `h1, h2 { color: var(--text-h); margin: ... }` for
+ * the rest of the app (Navbar, dashboard). That element-selector rule beats
+ * plain CSS inheritance, so any h1/h2 here that relies on an ancestor's
+ * text-background (no color utility of its own) renders near-black instead
+ * of the intended light color. Only reset color/margin — font-size, weight,
+ * etc. are already controlled by Tailwind utility classes on each heading,
+ * whose class-selector specificity already beats the plain element rule.
+ *
+ * font-family must also be reset: index.css's `h1, h2 { font-family: var(--heading) }`
+ * is an element-selector rule that beats the Inter font-family inherited from
+ * the `.landing-theme font-sans` container, so without this the headings would
+ * render in system-ui instead of Inter like the template.
+ */
+.landing-theme h1,
+.landing-theme h2 {
+  color: inherit;
+  margin: 0;
+  font-family: inherit;
+}
+
+.landing-theme ::selection {
+  background-color: hsl(0 0% 5%);
+  color: hsl(0 0% 100%);
+}
