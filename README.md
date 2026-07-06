@@ -105,3 +105,11 @@ Testnet, with a funded testnet account (use
 The deploy workflow requires these repository secrets: `STELLAR_SECRET_KEY`
 (a funded Testnet account used to sign the deploy), `VERCEL_TOKEN`,
 `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID`.
+
+> **Known limitation:** every push to `main` deploys a brand-new contract
+> instance via `stellar contract deploy` rather than upgrading the existing
+> one in place. This means jars created under a previous deployment become
+> orphaned (inaccessible from the new contract ID) once a new deploy lands,
+> and the "Live on Testnet" contract ID above changes on every merge. A
+> proper fix would switch to `stellar contract upgrade` for subsequent
+> deploys, deploying fresh only on the very first release.
