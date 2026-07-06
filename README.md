@@ -31,9 +31,15 @@ Four unlock types, selected at jar creation:
 
 Public functions: `create_jar`, `deposit`, `withdraw`, `get_jar`,
 `get_user_jars`, `is_unlocked`. See `contracts/save_jar/src/lib.rs` for the
-full interface and `src/test.rs` for the test suite (20 tests covering every
+full interface and `src/test.rs` for the test suite (23 tests covering every
 unlock type, unauthorized/double withdrawal, invalid configs, and asset
 validation).
+
+Two behaviors worth knowing that aren't obvious from the table above:
+- **Deposits are permissionless** — anyone can deposit into any jar, not
+  just its owner (e.g. to gift savings toward someone else's goal).
+- **Withdrawal is one-time and all-or-nothing** — there's no partial
+  withdrawal; once a jar is withdrawn, it's done.
 
 ### Build & test
 
