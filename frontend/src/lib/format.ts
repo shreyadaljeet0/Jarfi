@@ -15,6 +15,12 @@ export function toStroops(amount: string): bigint {
   return wholePart * STROOPS_PER_UNIT + BigInt(paddedFrac || "0");
 }
 
+/** Progress toward a savings goal, as a percentage in [0, 100]. null if there's no goal. */
+export function progressPercent(balance: bigint, targetAmount: bigint): number | null {
+  if (targetAmount <= 0n) return null;
+  return Math.min(100, Number((balance * 10000n) / targetAmount) / 100);
+}
+
 export function formatCountdown(targetDateSeconds: bigint, nowSeconds: number): string {
   const remaining = Number(targetDateSeconds) - nowSeconds;
   if (remaining <= 0) return "unlocked";

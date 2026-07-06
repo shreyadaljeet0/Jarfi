@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { JarData } from "save_jar_client";
 import { getClient, unwrapResult, friendlyContractError } from "../lib/contract";
-import { formatUnits, toStroops, formatCountdown } from "../lib/format";
+import { formatUnits, toStroops, formatCountdown, progressPercent } from "../lib/format";
 
 interface JarCardProps {
   jarId: bigint;
@@ -26,9 +26,7 @@ export function JarCard({ jarId, jar, unlocked, address, nowSeconds, onChanged }
 
   const hasGoal = jar.target_amount > 0n;
   const hasDate = jar.target_date > 0n;
-  const progressPct = hasGoal
-    ? Math.min(100, Number((jar.balance * 10000n) / jar.target_amount) / 100)
-    : null;
+  const progressPct = progressPercent(jar.balance, jar.target_amount);
 
   const status = jar.withdrawn ? "Withdrawn" : unlocked ? "Unlocked" : "Locked";
 
