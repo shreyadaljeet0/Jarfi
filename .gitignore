@@ -7,3 +7,6 @@ target
 
 # Node
 node_modules
+
+# Stray local artifacts
+*.hometemplate.zip
