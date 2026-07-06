@@ -1,32 +1,25 @@
-# React + TypeScript + Vite
+# SaveJar frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React + Vite + TypeScript dApp for the [save_jar](../contracts/save_jar)
+Soroban contract. See the [repo root README](../README.md) for the full
+project overview, contract details, and deploy instructions.
 
-Currently, two official plugins are available:
+## Routes
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `/` — marketing landing page
+- `/app` — the jar dApp (create jars, deposit, withdraw)
+- `/wallet` — a standalone Freighter wallet demo (connect, balance, send XLM)
 
-## React Compiler
+## Development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install         # from the repo root — sets up the npm workspace
+npm run dev -w frontend
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Scripts
+
+- `npm run dev -w frontend` — start the Vite dev server
+- `npm run build -w frontend` — type-check and build for production
+- `npm run lint -w frontend` — run oxlint
+- `npm run test -w frontend` — run the Vitest unit tests
