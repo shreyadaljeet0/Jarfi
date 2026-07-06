@@ -282,6 +282,33 @@ fn test_either_one_unlocks_on_first_condition_met() {
 }
 
 #[test]
+fn test_either_one_unlocks_on_date_before_goal_met() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let contract_id = env.register(SaveJarContract, ());
+    let client = SaveJarContractClient::new(&env, &contract_id);
+
+    let owner = Address::generate(&env);
+    let admin = Address::generate(&env);
+    let (asset, token_admin, _) = create_token(&env, &admin);
+    token_admin.mint(&owner, &1_000_i128);
+
+    let target_date = env.ledger().timestamp() + 1000;
+    let jar_id = client.create_jar(&owner, &asset, &UnlockType::EitherOne, &target_date, &500i128);
+
+    client.deposit(&jar_id, &owner, &100i128);
+    assert!(!client.is_unlocked(&jar_id), "neither date nor goal met yet");
+
+    env.ledger().set_timestamp(target_date);
+    assert!(client.is_unlocked(&jar_id), "date reached even though goal is unmet");
+    client.withdraw(&jar_id, &owner);
+
+    let jar = client.get_jar(&jar_id);
+    assert!(jar.withdrawn);
+}
+
+#[test]
 fn test_either_one_requires_both_targets_set() {
     let env = Env::default();
     env.mock_all_auths();
