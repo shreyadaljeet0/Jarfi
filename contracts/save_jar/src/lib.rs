@@ -188,7 +188,7 @@ impl SaveJarContract {
         }
 
         let token_client = token::TokenClient::new(&env, &jar.asset);
-        token_client.transfer(&depositor, &env.current_contract_address(), &amount);
+        token_client.transfer(&depositor, env.current_contract_address(), &amount);
 
         jar.balance += amount;
         env.storage().persistent().set(&DataKey::Jar(jar_id), &jar);

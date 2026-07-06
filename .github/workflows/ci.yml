@@ -15,9 +15,13 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32v1-none
+          components: clippy, rustfmt
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
+
+      - name: Clippy
+        run: cargo clippy -p save_jar --all-targets -- -D warnings
 
       - name: Run unit tests
         run: cargo test -p save_jar
