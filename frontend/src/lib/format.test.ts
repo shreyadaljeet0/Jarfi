@@ -61,6 +61,10 @@ describe("formatCountdown", () => {
     expect(formatCountdown(200_000n, 0)).toBe("2d 7h");
   });
 
+  it("formats minutes and seconds remaining when under an hour", () => {
+    expect(formatCountdown(150n, 0)).toBe("2m 30s");
+  });
+
   it("formats seconds remaining when under a minute", () => {
     expect(formatCountdown(30n, 0)).toBe("30s");
   });
